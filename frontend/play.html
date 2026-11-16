@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>Playing - Desk Duel</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="player-bar">
+    <span id="meName">&#9889;</span>
+    <span class="muted" id="progress"></span>
+    <span class="score" id="meScore">0 pts</span>
+  </div>
+
+  <main class="phone">
+    <!-- Waiting in the lobby -->
+    <section id="lobbyView" data-view class="big-center">
+      <div>
+        <div class="spinner"></div>
+        <h2>You're in!</h2>
+        <p class="muted" id="lobbyText">Waiting for the host to start the game...</p>
+        <p class="pill" id="lobbyCount"></p>
+      </div>
+    </section>
+
+    <!-- Countdown -->
+    <section id="readyView" data-view class="big-center hidden">
+      <div>
+        <h2 class="muted">Get ready!</h2>
+        <div class="countdown" id="readyCount">3</div>
+      </div>
+    </section>
+
+    <!-- Answering -->
+    <section id="questionView" data-view class="hidden player-view">
+      <div class="timebar" id="timebar"><div></div></div>
+      <div class="q-text" id="qText"></div>
+      <div class="answer-buttons" id="answerButtons"></div>
+    </section>
+
+    <!-- Answer locked, waiting for the others -->
+    <section id="lockedView" data-view class="big-center hidden">
+      <div>
+        <div class="spinner"></div>
+        <h2>Answer locked in!</h2>
+        <p class="muted" id="lockedText"></p>
+        <p class="pill" id="lockedCount"></p>
+      </div>
+    </section>
+
+    <!-- Result after each question -->
+    <section id="revealView" data-view class="hidden player-view player-reveal">
+      <div class="result-card" id="resultCard">
+        <div class="big" id="resultTitle"></div>
+        <div class="pts" id="resultPoints"></div>
+        <div id="resultExtra" class="result-extra"></div>
+      </div>
+      <div class="stat-row">
+        <div class="stat"><div class="v" id="myRank">-</div><div class="l">Your rank</div></div>
+        <div class="stat"><div class="v" id="myScore">0</div><div class="l">Total points</div></div>
+      </div>
+      <div class="card compact-card">
+        <h3>&#127942; Live leaderboard</h3>
+        <div id="board"></div>
+      </div>
+      <p class="muted center">Waiting for the host to continue...</p>
+    </section>
+
+    <!-- Final -->
+    <section id="finishedView" data-view class="hidden">
+      <div class="center"><h1>Game over!</h1><p class="muted" id="finalLine"></p></div>
+      <div id="podium"></div>
+      <div class="card compact-card">
+        <h3>Final leaderboard</h3>
+        <div id="finalBoard"></div>
+      </div>
+      <div class="center play-again"><a class="btn" href="index.html">Play again</a></div>
+    </section>
+
+    <!-- Problems -->
+    <section id="errorView" data-view class="big-center hidden">
+      <div>
+        <h2 id="errorTitle">Oops</h2>
+        <p class="muted" id="errorText"></p>
+        <a class="btn" href="index.html">Back to join page</a>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/common.js"></script>
+  <script src="js/play.js"></script>
+</body>
+</html>

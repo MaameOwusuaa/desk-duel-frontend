@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Host - Desk Duel</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a href="index.html" class="brand brand-link"><div class="brand-mark">&#9889;</div> Desk Duel</a>
+    <div class="spacer"></div>
+    <span class="pill hidden" id="codePill"></span>
+    <button class="btn ghost small" id="muteBtn" title="Sound on/off">&#128266; Sound</button>
+    <button class="btn ghost small hidden" id="endBtn">End game</button>
+  </header>
+
+  <!-- Host PIN -->
+  <main class="wrap host-pin-layout" id="hostPinView" data-view>
+    <form class="card host-pin-card" id="hostPinForm" autocomplete="off">
+      <span class="join-icon host-lock-icon">&#128274;</span>
+      <p class="eyebrow">HOST ACCESS</p>
+      <h1>Enter the host PIN</h1>
+      <p class="muted">Enter the PIN to set up and host a game.</p>
+      <label for="hostPin">Host PIN</label>
+      <input id="hostPin" type="password" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" autocomplete="current-password" required>
+      <button class="btn block big host-create" id="hostPinBtn">Continue <span>&#8594;</span></button>
+      <div id="hostPinError" class="error-msg hidden"></div>
+    </form>
+  </main>
+
+  <!-- 1. Setup -->
+  <main class="wrap setup-layout hidden" id="setupView" data-view>
+    <section class="setup-intro">
+      <p class="eyebrow">HOST CONTROL ROOM</p>
+      <h1>Set the stage<br>for a <span>showdown.</span></h1>
+      <p class="muted">Choose your round, invite the room, and see who knows their stuff.</p>
+      <div class="setup-note"><span>&#10003;</span> Live scores and a shared leaderboard</div>
+      <div class="setup-note"><span>&#10003;</span> Up to 20 players can join</div>
+    </section>
+    <form class="card setup-card" id="setupForm">
+      <div class="setup-card-heading"><span class="eyebrow">GAME SETTINGS</span><h2>Build your game</h2></div>
+      <label for="hostName">Your name</label>
+      <input id="hostName" maxlength="50" required placeholder="e.g. Ama">
+      <label for="category">Question category</label>
+      <select id="category"><option value="">All categories</option></select>
+      <div class="grid-2 host-form-grid">
+        <div>
+          <label for="numQ">Number of questions</label>
+          <input id="numQ" type="number" min="1" max="50" value="10">
+        </div>
+        <div>
+          <label for="timeLimit">Seconds per question</label>
+          <input id="timeLimit" type="number" min="5" max="120" value="20">
+        </div>
+      </div>
+      <button class="btn block big host-create" id="createBtn">Create game</button>
+      <div id="setupError" class="error-msg hidden"></div>
+      <p class="muted host-help">Need more questions? <a href="questions.html">Visit the Question Bank</a>.</p>
+    </form>
+  </main>
+
+  <!-- 2. Lobby -->
+  <main class="wrap hidden" id="lobbyView" data-view>
+    <div class="card lobby-head">
+      <div class="join-info">
+        <div class="muted host-instruction">Go to</div>
+        <div class="url" id="joinUrl"></div>
+        <div class="muted host-instruction host-instruction-spaced">and enter game code</div>
+        <div class="game-code" id="bigCode"></div>
+      </div>
+      <div class="qr" id="qr" title="Scan to join"></div>
+    </div>
+    <div class="card host-players-card">
+      <div class="row">
+        <h2 class="no-bottom-margin">Players</h2>
+        <span class="count-badge" id="playerCount">0 / 20</span>
+        <div class="spacer"></div>
+        <span class="muted" id="startHint"></span>
+        <button class="btn big" id="startBtn" disabled>Start game &#9654;</button>
+      </div>
+      <div class="players-grid" id="playersGrid"></div>
+    </div>
+  </main>
+
+  <!-- 3. Get ready -->
+  <main class="stage hidden" id="readyView" data-view>
+    <div class="big-center">
+      <div>
+        <h2 class="muted">Get ready!</h2>
+        <div class="countdown" id="readyCount">3</div>
+        <p class="muted" id="readyInfo"></p>
+      </div>
+    </div>
+  </main>
+
+  <!-- 4. Question -->
+  <main class="stage hidden" id="questionView" data-view>
+    <div class="stage-top">
+      <span class="q-count" id="qCount"></span>
+      <span class="pill" id="qCategory"></span>
+      <div class="spacer"></div>
+      <button class="btn ghost small" id="skipBtn">Show answer now</button>
+    </div>
+    <div class="q-text" id="qText"></div>
+    <div class="q-middle">
+      <div class="timer" id="timer"><span id="timerNum">20</span></div>
+      <div class="answered-box"><div class="n" id="answeredNum">0</div><div class="muted" id="answeredOf">answers</div></div>
+    </div>
+    <div class="options" id="qOptions"></div>
+  </main>
+
+  <!-- 5. Reveal + leaderboard -->
+  <main class="stage hidden" id="revealView" data-view>
+    <div class="stage-top">
+      <span class="q-count" id="rCount"></span>
+      <div class="spacer"></div>
+      <button class="btn big" id="nextBtn">Next question &#9654;</button>
+    </div>
+    <div class="q-text reveal-question" id="rText"></div>
+    <div class="reveal-grid">
+      <div class="reveal-options-column">
+        <div class="options" id="rOptions"></div>
+        <div class="fastest hidden" id="fastest"></div>
+        <div class="muted" id="rSummary"></div>
+      </div>
+      <div class="card reveal-board-card">
+        <h3>&#127942; Leaderboard</h3>
+        <div id="rBoard"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 6. Final results -->
+  <main class="wrap hidden" id="finishedView" data-view>
+    <div class="center final-heading">
+      <h1>&#127881; Final results</h1>
+      <p class="muted" id="finalInfo"></p>
+    </div>
+    <div id="podium"></div>
+    <div class="card final-board-card">
+      <h3>Full leaderboard</h3>
+      <div id="finalBoard"></div>
+    </div>
+    <div class="center final-actions">
+      <button class="btn big" id="newGameBtn">Host another game</button>
+    </div>
+  </main>
+
+  <script src="js/vendor/qrcode.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/host.js"></script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Desk Duel</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><div class="brand-mark">&#9889;</div> Desk Duel</div>
+    <div class="spacer"></div>
+    <a class="link" href="questions.html">Question Bank</a>
+  </header>
+
+  <main class="landing-layout wrap">
+    <section class="landing-copy">
+      <p class="eyebrow">THE OFFICE QUIZ SHOWDOWN</p>
+      <h1>It's time to<br>declare the real<br><span>boss of the office.</span></h1>
+      <p class="landing-lede">Quick questions. Friendly rivalry. One very competitive leaderboard.</p>
+      <div class="landing-facts">
+        <div><strong>01</strong><span>Join from any phone</span></div>
+        <div><strong>02</strong><span>Play together in real time</span></div>
+        <div><strong>03</strong><span>Fast answers score more</span></div>
+      </div>
+      <a class="landing-host-link" href="host.html"><span class="host-link-icon">&#9654;</span><span><b>Running the quiz?</b><small>Set up a new game</small></span><span class="host-link-arrow">&#8594;</span></a>
+    </section>
+
+    <form class="card join-card" id="joinForm" autocomplete="off">
+      <div class="join-card-heading">
+        <span class="join-icon">&#9889;</span>
+        <div><p class="eyebrow">PLAYER ENTRY</p><h2>Join the game</h2></div>
+      </div>
+      <p class="muted">Enter the six-digit code on the host screen.</p>
+        <label for="code">Game code</label>
+        <input id="code" class="code-input" inputmode="numeric" maxlength="6" placeholder="000000" required>
+        <label for="name">Your name</label>
+        <input id="name" maxlength="20" placeholder="e.g. Ama" required>
+      <button class="btn block big landing-join" id="joinBtn">Enter the arena <span>&#8594;</span></button>
+      <div id="joinError" class="error-msg hidden"></div>
+      <p class="join-card-foot">No account needed <span>&bull;</span> Just bring your game code</p>
+    </form>
+  </main>
+
+  <script src="js/common.js"></script>
+  <script src="js/index.js"></script>
+</body>
+</html>

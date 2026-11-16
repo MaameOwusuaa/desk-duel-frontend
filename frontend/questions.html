@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Question Bank - Desk Duel</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a href="index.html" class="brand brand-link"><div class="brand-mark">&#9889;</div> Desk Duel</a>
+    <div class="spacer"></div>
+    <a class="link" href="host.html">Host a game</a>
+  </header>
+
+  <main class="wrap">
+    <section class="bank-heading">
+      <div><p class="eyebrow">KEEP THE GAME FRESH</p><h1>Question Bank</h1>
+        <p class="muted">Manage your categories, add new rounds, and revisit recent games.</p></div>
+      <span class="bank-mark">&#10003;</span>
+    </section>
+
+    <div class="card narrow hidden pin-card" id="pinCard">
+      <h3>Admin PIN</h3>
+      <p class="muted">A PIN is needed to add, edit or delete questions.</p>
+      <div class="row"><input id="pinInput" type="password" class="pin-input" placeholder="PIN">
+        <button class="btn" id="pinBtn">Unlock</button></div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="listTab">All questions</button>
+      <button class="tab" data-tab="formTab" id="formTabBtn">Add question</button>
+      <button class="tab" data-tab="importTab">Import CSV</button>
+      <button class="tab" data-tab="historyTab">Game history</button>
+    </div>
+
+    <!-- List -->
+    <section class="card" id="listTab" data-tabpanel>
+      <div class="row filter-row">
+        <select id="filter" class="category-filter"><option value="">All categories</option></select>
+        <span class="muted" id="listCount"></span>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Category</th><th>Question</th><th>A</th><th>B</th><th>C</th><th>D</th><th>Answer</th><th></th></tr></thead>
+          <tbody id="qBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Add / edit -->
+    <section class="card hidden" id="formTab" data-tabpanel>
+      <form id="qForm" autocomplete="off">
+        <h3 id="formTitle">Add a question</h3>
+        <input type="hidden" id="qId">
+        <label for="qCategory">Category</label>
+        <input id="qCategory" list="catList" maxlength="50" required placeholder="e.g. Insurance Basics">
+        <datalist id="catList"></datalist>
+        <label for="qTextIn">Question</label>
+        <input id="qTextIn" maxlength="500" required>
+        <div class="opt-grid">
+          <div><label>Option A</label><input id="qA" maxlength="200" required></div>
+          <div><label>Option B</label><input id="qB" maxlength="200" required></div>
+          <div><label>Option C</label><input id="qC" maxlength="200" required></div>
+          <div><label>Option D</label><input id="qD" maxlength="200" required></div>
+        </div>
+        <label for="qCorrect">Correct answer</label>
+        <select id="qCorrect" class="correct-answer-select">
+          <option>A</option><option>B</option><option>C</option><option>D</option>
+        </select>
+        <div class="row question-actions">
+          <button class="btn" id="saveBtn">Save question</button>
+          <button type="button" class="btn ghost" id="cancelEdit">Clear</button>
+        </div>
+        <div id="formError" class="error-msg hidden"></div>
+      </form>
+    </section>
+
+    <!-- Import -->
+    <section class="card hidden" id="importTab" data-tabpanel>
+      <h3>Import questions from CSV</h3>
+      <p class="muted">One question per line, 7 columns: <code>category,question,option_a,option_b,option_c,option_d,correct</code>.
+        The correct column is A, B, C or D. A header row is optional. Put text containing commas in "double quotes".
+        You can paste straight from Excel after saving as CSV.</p>
+      <textarea id="csvText" placeholder='category,question,option_a,option_b,option_c,option_d,correct
+Insurance Basics,"What does a funeral policy pay for?",Car repairs,Funeral costs,School fees,Medical bills,B'></textarea>
+      <div class="row csv-actions">
+        <input type="file" id="csvFile" accept=".csv,text/csv" class="csv-file">
+        <div class="spacer"></div>
+        <button class="btn" id="importBtn">Import</button>
+      </div>
+      <div id="importResult" class="import-result"></div>
+    </section>
+
+    <!-- History -->
+    <section class="card hidden" id="historyTab" data-tabpanel>
+      <h3>Recent games</h3>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Code</th><th>Host</th><th>Category</th><th>Questions</th><th>Players</th><th>Winner</th><th>Status</th><th>Created</th></tr></thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/common.js"></script>
+  <script src="js/questions.js"></script>
+</body>
+</html>
