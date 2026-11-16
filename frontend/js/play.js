@@ -24,7 +24,7 @@ function fail(title, text) {
 }
 
 if (!me) {
-  location.href = "index.html";
+  location.href = "/";
 } else {
   $("#meName").textContent = "⚡ " + me.name;
   socket = new LiveSocket(`/ws/player/${me.code}?player_id=${me.player_id}&token=${me.token}`, handle);

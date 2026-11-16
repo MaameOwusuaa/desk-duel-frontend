@@ -32,7 +32,7 @@ $("#joinForm").addEventListener("submit", async (event) => {
     const result = await api(`/api/games/${code}/join`, { method: "POST", body: { name } });
     sessionStorage.setItem("quiz_player", JSON.stringify(result));
     localStorage.setItem("quiz_last_name", result.name);
-    location.href = "play.html";
+    location.href = "/frontend/play.html";
   } catch (error) {
     $("#joinError").textContent = error.message;
     $("#joinError").classList.remove("hidden");

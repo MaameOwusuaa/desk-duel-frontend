@@ -24,8 +24,8 @@ A live multiplayer quiz game for the office. The host runs it on a laptop or pro
 From the project folder:
 
 ```bash
-mysql -u root -p < database/schema.sql
-mysql -u root -p desk_duel < database/seed_questions.sql
+mysql -u root -p < backend/database/schema.sql
+mysql -u root -p desk_duel < backend/database/seed_questions.sql
 ```
 
 (Or open both files in MySQL Workbench and run them in that order.)
@@ -33,7 +33,7 @@ mysql -u root -p desk_duel < database/seed_questions.sql
 The seed file adds 120 starter questions: 30 each in General Knowledge, Ghana, Office & Tech, and Python & MySQL Basics. If you already have the earlier question bank, run this one-time update instead of rerunning the seed file:
 
 ```bash
-mysql -u root -p desk_duel < database/add_questions_to_30.sql
+mysql -u root -p desk_duel < backend/database/add_questions_to_30.sql
 ```
 
 ## 3. Install and configure the backend
@@ -70,7 +70,7 @@ uvicorn main:app --host 0.0.0.0 --port 8000
 
 ## 5. Play
 
-1. On the host computer, open **http://localhost:8000/host.html**. You can put it on the projector.
+1. On the host computer, open **http://localhost:8000/frontend/host.html**. You can put it on the projector.
 2. Choose a category, the number of questions and the seconds per question, then click **Create game**.
 3. The lobby screen shows the join address, a big game code and a QR code. Players scan the QR code, or open the address and type the code and their name.
 4. When at least 2 players have joined, click **Start game**.
@@ -100,7 +100,7 @@ You can change these values at the top of `backend/config.py` (`MAX_POINTS`, `MI
 
 ## Question Bank
 
-Open **http://localhost:8000/questions.html** to:
+Open **http://localhost:8000/frontend/questions.html** to:
 
 - See all questions, filtered by category
 - Add or edit a question
@@ -126,19 +126,19 @@ Hosting a game requires the host PIN `2002` by default. You can change it by set
 
 ```
 desk-duel/
-├── backend/
+├── index.html             Join page (players land here from the QR code)
+├── backend/               Separate backend Git repository
 │   ├── main.py            FastAPI app: REST API, WebSockets, serves the frontend
 │   ├── game.py            Live game engine (lobby, timer, scoring, leaderboard)
 │   ├── db.py              All MySQL queries (mysql-connector-python, connection pool)
 │   ├── config.py          Settings and game rules
 │   ├── requirements.txt
-│   └── .env.example
-├── database/
-│   ├── schema.sql         Tables: questions, games, game_questions, players, answers
-│   ├── seed_questions.sql 120 starter questions (30 per category)
-│   └── add_questions_to_30.sql One-time update for an existing question bank
+│   ├── .env.example
+│   └── database/
+│       ├── schema.sql      Tables: questions, games, game_questions, players, answers
+│       ├── seed_questions.sql 120 starter questions (30 per category)
+│       └── add_questions_to_30.sql One-time update for an existing question bank
 └── frontend/
-    ├── index.html         Join page (players land here from the QR code)
     ├── host.html          Host / projector screen
     ├── play.html          Player screen
     ├── questions.html     Question Bank and game history
