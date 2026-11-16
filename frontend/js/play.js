@@ -42,6 +42,7 @@ function handle(msg) {
       return;
     case "reveal": return onReveal(msg);
     case "finished": return onFinished(msg);
+    case "error": return toast(msg.message, 3500);
     case "kicked": sessionStorage.removeItem("quiz_player"); return fail("Removed", msg.message);
     case "replaced": return fail("Opened elsewhere", msg.message);
     case "fatal": sessionStorage.removeItem("quiz_player"); return fail("Game not found", msg.message);

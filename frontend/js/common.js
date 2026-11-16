@@ -1,6 +1,11 @@
 // Shared helpers for all pages.
 
 const $ = (sel, root = document) => root.querySelector(sel);
+const API_BASE = String(window.DESK_DUEL_API_BASE || "").replace(/\/+$/, "");
+
+function apiPath(path) {
+  return `${API_BASE}${path.startsWith("/") ? path : `/${path}`}`;
+}
 
 function esc(text) {
   const div = document.createElement("div");
@@ -9,9 +14,9 @@ function esc(text) {
 }
 
 async function api(path, { method = "GET", body, headers = {} } = {}) {
-  const res = await fetch(path, {
+  const res = await fetch(apiPath(path), {
     method,
-    headers: { "Content-Type": "application/json", ...headers },
+    headers: { ...(body ? { "Content-Type": "application/json" } : {}), ...headers },
     body: body ? JSON.stringify(body) : undefined,
   });
   let data = null;
@@ -43,41 +48,64 @@ function show(id) {
   document.querySelectorAll("[data-view]").forEach(v => v.classList.toggle("hidden", v.id !== id));
 }
 
-function wsUrl(path) {
-  const proto = location.protocol === "https:" ? "wss:" : "ws:";
-  return `${proto}//${location.host}${path}`;
-}
-
-// A WebSocket that reconnects by itself (phones lock, Wi-Fi blips...).
+// Polls durable game state so host and players can connect to different
+// serverless instances without losing the live match.
 class LiveSocket {
   constructor(path, onMessage) {
-    this.path = path;
     this.onMessage = onMessage;
-    this.retry = 0;
+    this.retries = 0;
     this.closedForGood = false;
+    this.version = -1;
     this.banner = null;
-    this.connect();
-    setInterval(() => this.send({ action: "ping" }), 25000);
+    this.errorShown = false;
+    const url = new URL(path, location.origin);
+    const match = url.pathname.match(/^\/ws\/(host|player)\/([^/]+)$/);
+    if (!match) {
+      this.closedForGood = true;
+      this.onMessage({ type: "fatal", message: "Invalid game connection." });
+      return;
+    }
+    this.role = match[1];
+    this.code = match[2];
+    this.token = url.searchParams.get("token") || "";
+    this.playerId = url.searchParams.get("player_id");
+    this.poll();
   }
-  connect() {
-    this.ws = new WebSocket(wsUrl(this.path));
-    this.ws.onopen = () => { this.retry = 0; this.setBanner(false); };
-    this.ws.onmessage = e => {
-      const msg = JSON.parse(e.data);
-      if (msg.type === "pong") return;
-      if (["fatal", "kicked", "replaced"].includes(msg.type)) this.closedForGood = true;
-      this.onMessage(msg);
-    };
-    this.ws.onclose = () => {
-      if (this.closedForGood) return;
+
+  async poll() {
+    if (this.closedForGood) return;
+    const params = new URLSearchParams({ role: this.role, token: this.token, since: String(this.version) });
+    if (this.playerId) params.set("player_id", this.playerId);
+    try {
+      const state = await api(`/api/games/${encodeURIComponent(this.code)}/stream?${params}`);
+      this.retries = 0;
+      this.setBanner(false);
+      this.version = Math.max(this.version, Number(state.version ?? this.version));
+      if (["fatal", "kicked", "replaced"].includes(state.type)) {
+        this.closedForGood = true;
+        this.onMessage(state);
+        return;
+      }
+      if (state.type !== "noop") this.onMessage(state);
+      setTimeout(() => this.poll(), 800);
+    } catch (error) {
       this.setBanner(true);
-      const wait = Math.min(1000 * 2 ** this.retry, 8000);
-      this.retry++;
-      setTimeout(() => this.connect(), wait);
-    };
+      if (!this.errorShown) {
+        toast(error.message, 5000);
+        this.errorShown = true;
+      }
+      const wait = Math.min(800 * 2 ** this.retries, 8000);
+      this.retries += 1;
+      setTimeout(() => this.poll(), wait);
+    }
   }
+
   send(obj) {
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) this.ws.send(JSON.stringify(obj));
+    if (this.closedForGood) return;
+    api(`/api/games/${encodeURIComponent(this.code)}/action`, {
+      method: "POST",
+      body: { ...obj, role: this.role, token: this.token, player_id: this.playerId ? Number(this.playerId) : obj.player_id },
+    }).catch(error => this.onMessage({ type: "error", message: error.message }));
   }
   setBanner(on) {
     if (on && !this.banner) {

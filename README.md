@@ -9,7 +9,7 @@ A live multiplayer quiz game for the office. The host runs it on a laptop or pro
 - Question Bank page to add, edit, delete or bulk-import questions (CSV)
 - Every game, player and answer is saved in MySQL
 
-**Stack:** HTML, CSS, JavaScript · FastAPI (with WebSockets) · MySQL · mysql-connector-python
+**Stack:** HTML, CSS, JavaScript · FastAPI · MySQL · mysql-connector-python
 
 ---
 
@@ -65,7 +65,7 @@ uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 
 - `--host 0.0.0.0` lets phones on the office network reach the server.
-- Use **one** worker (the default). Live games are kept in the server's memory.
+- Live game state is stored in MySQL, so the game can recover across backend restarts and serverless instances.
 - On Windows, if a firewall pop-up appears, allow Python on **private networks**.
 
 ## 5. Play
@@ -113,6 +113,17 @@ To stop just anyone from editing questions, set `ADMIN_PIN=1234` (your own PIN) 
 
 Hosting a game requires the host PIN `2002` by default. You can change it by setting `HOST_PIN` in `backend/.env` and in your production hosting environment.
 
+## Deploy online with Vercel
+
+The frontend and backend are separate Git repositories, so deploy them as two Vercel projects:
+
+1. Deploy the backend repository as a Python project. Vercel detects `main.py`; no frontend directory is required in this repository.
+2. In the backend project's environment settings, add `DATABASE_URL` from your hosted MySQL provider, `HOST_PIN=2002`, `PUBLIC_URL` set to the frontend's public URL, and `FRONTEND_ORIGINS` set to that same frontend origin. Set `DB_POOL_SIZE=2` to keep connection use modest across serverless instances.
+3. If the database already has the old schema, run `backend/database/migrate_serverless_runtime.sql` once against it. For a new database, run `backend/database/schema.sql` and `backend/database/seed_questions.sql` instead.
+4. Deploy the `desk-duel` repository as a static Vercel project. Set `window.DESK_DUEL_API_BASE` in `frontend/js/api-config.js` to the backend project's origin, then redeploy the frontend.
+
+The browser polls the API for game changes, and MySQL stores the current game state. This lets the host and players reach different serverless instances without relying on process-local game memory. Keep database credentials in Vercel's environment settings; do not put them in the frontend config.
+
 ## Troubleshooting
 
 | Problem | Fix |
@@ -120,7 +131,8 @@ Hosting a game requires the host PIN `2002` by default. You can change it by set
 | Phones can't open the page | Make sure they're on the same Wi-Fi as the host computer, and allow Python through the Windows firewall. Guest Wi-Fi networks often block device-to-device traffic. |
 | Join address shows the wrong IP | Set `PUBLIC_URL=http://<your-ip>:8000` in `.env`. Find your IP with `ipconfig` (Windows) or `ifconfig`/`ip a` (Mac/Linux). |
 | "Could not connect to MySQL" in the console | Check the values in `backend/.env` and that MySQL is running. |
-| Server restarted mid-game | Live games are in memory, so start a new game. All finished answers are already saved in MySQL. |
+| Online frontend cannot reach the API | Set `DESK_DUEL_API_BASE` in `frontend/js/api-config.js`, and set `FRONTEND_ORIGINS` in the backend environment to the exact frontend origin. |
+| Database error after deployment | Check `DATABASE_URL`, make sure the database accepts connections from the deployed backend, and apply `migrate_serverless_runtime.sql` to an existing database. |
 
 ## Project structure
 
@@ -128,8 +140,9 @@ Hosting a game requires the host PIN `2002` by default. You can change it by set
 desk-duel/
 ├── index.html             Join page (players land here from the QR code)
 ├── backend/               Separate backend Git repository
-│   ├── main.py            FastAPI app: REST API, WebSockets, serves the frontend
-│   ├── game.py            Live game engine (lobby, timer, scoring, leaderboard)
+│   ├── main.py            FastAPI app: REST API, serves the frontend when bundled
+│   ├── live_db.py         MySQL-backed live game state and actions
+│   ├── game.py            Earlier in-process game engine
 │   ├── db.py              All MySQL queries (mysql-connector-python, connection pool)
 │   ├── config.py          Settings and game rules
 │   ├── requirements.txt
@@ -137,7 +150,8 @@ desk-duel/
 │   └── database/
 │       ├── schema.sql      Tables: questions, games, game_questions, players, answers
 │       ├── seed_questions.sql 120 starter questions (30 per category)
-│       └── add_questions_to_30.sql One-time update for an existing question bank
+│       ├── add_questions_to_30.sql One-time question-bank update
+│       └── migrate_serverless_runtime.sql One-time update for existing game tables
 └── frontend/
     ├── host.html          Host / projector screen
     ├── play.html          Player screen
@@ -155,17 +169,13 @@ REST:
 | POST | `/api/games` | Create a game → `{code, host_token}` |
 | GET | `/api/games/{code}` | Game status |
 | POST | `/api/games/{code}/join` | Join with `{name}` → `{player_id, token}` |
+| GET | `/api/games/{code}/stream` | Poll the current game state using the host or player token |
+| POST | `/api/games/{code}/action` | Send host controls or a player answer |
 | GET | `/api/categories` | Categories and question counts |
 | GET/POST | `/api/questions` | List / add questions |
 | PUT/DELETE | `/api/questions/{id}` | Edit / delete a question |
 | POST | `/api/questions/import` | CSV import |
 | GET | `/api/history` | Recent games |
 | GET | `/api/health` | Server and database check |
-
-WebSockets:
-
-- `/ws/host/{code}?token=...`: the host sends `start`, `next`, `reveal_now`, `end` and `kick`.
-- `/ws/player/{code}?player_id=...&token=...`: the player sends `answer` with `{option: "A"–"D"}`.
-- The server pushes `lobby`, `get_ready`, `question`, `answer_count`, `answer_locked`, `reveal` and `finished`.
 
 The QR code library (`frontend/js/vendor/qrcode.js`) is qrcode-generator by Kazuhiko Arase, MIT licence. It is bundled, so the game works without internet access.
