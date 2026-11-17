@@ -113,16 +113,16 @@ To stop just anyone from editing questions, set `ADMIN_PIN=1234` (your own PIN) 
 
 Hosting a game requires the host PIN `2002` by default. You can change it by setting `HOST_PIN` in `backend/.env` and in your production hosting environment.
 
-## Deploy online with Vercel
+## Deploy online
 
-The frontend and backend are separate Git repositories, so deploy them as two Vercel projects:
+The frontend and backend are separate Git repositories and deploy as separate services. The current frontend is hosted at `https://desk-duel-frontend.onrender.com`; it serves the static pages only. The API must be deployed separately and configured in the frontend:
 
-1. Deploy the backend repository as a Python project. Vercel detects `main.py`; no frontend directory is required in this repository.
-2. In the backend project's environment settings, add `DATABASE_URL` from your hosted MySQL provider, `HOST_PIN=2002`, `PUBLIC_URL` set to the frontend's public URL, and `FRONTEND_ORIGINS` set to that same frontend origin. Set `DB_POOL_SIZE=2` to keep connection use modest across serverless instances.
+1. Deploy the backend repository as a Python service. Vercel supports FastAPI apps; the backend can also run as a Render web service with `uvicorn main:app --host 0.0.0.0 --port $PORT`.
+2. In the backend service's environment settings, add `DATABASE_URL` from your hosted MySQL provider. It must select the `desk_duel` database (the URL path should end in `/desk_duel`). Also set `HOST_PIN=2002`, `PUBLIC_URL=https://desk-duel-frontend.onrender.com`, and `FRONTEND_ORIGINS=https://desk-duel-frontend.onrender.com`. Set `DB_POOL_SIZE=2` to keep connection use modest across serverless instances.
 3. If the database already has the old schema, run `backend/database/migrate_serverless_runtime.sql` once against it. For a new database, run `backend/database/schema.sql` and `backend/database/seed_questions.sql` instead.
-4. Deploy the `desk-duel` repository as a static Vercel project. Set `window.DESK_DUEL_API_BASE` in `frontend/js/api-config.js` to the backend project's origin, then redeploy the frontend.
+4. `frontend/js/api-config.js` is configured for `https://desk-duel-gamma.vercel.app`. Redeploy the frontend after pushing the change. The value must be the Desk Duel API URL, not another application's backend URL.
 
-The browser polls the API for game changes, and MySQL stores the current game state. This lets the host and players reach different serverless instances without relying on process-local game memory. Keep database credentials in Vercel's environment settings; do not put them in the frontend config.
+The browser polls the API for game changes, and MySQL stores the current game state. This lets the host and players reach different serverless instances without relying on process-local game memory. Keep database credentials in the backend service's environment settings; do not put them in the frontend config.
 
 ## Troubleshooting
 
@@ -131,7 +131,7 @@ The browser polls the API for game changes, and MySQL stores the current game st
 | Phones can't open the page | Make sure they're on the same Wi-Fi as the host computer, and allow Python through the Windows firewall. Guest Wi-Fi networks often block device-to-device traffic. |
 | Join address shows the wrong IP | Set `PUBLIC_URL=http://<your-ip>:8000` in `.env`. Find your IP with `ipconfig` (Windows) or `ifconfig`/`ip a` (Mac/Linux). |
 | "Could not connect to MySQL" in the console | Check the values in `backend/.env` and that MySQL is running. |
-| Online frontend cannot reach the API | Set `DESK_DUEL_API_BASE` in `frontend/js/api-config.js`, and set `FRONTEND_ORIGINS` in the backend environment to the exact frontend origin. |
+| Online frontend cannot reach the API | The static Render site does not run FastAPI. Set `DESK_DUEL_API_BASE` in `frontend/js/api-config.js` to the Desk Duel backend origin, and set `FRONTEND_ORIGINS` in the backend environment to `https://desk-duel-frontend.onrender.com`. |
 | Database error after deployment | Check `DATABASE_URL`, make sure the database accepts connections from the deployed backend, and apply `migrate_serverless_runtime.sql` to an existing database. |
 
 ## Project structure

@@ -24,7 +24,9 @@ async function api(path, { method = "GET", body, headers = {} } = {}) {
   try { data = responseText ? JSON.parse(responseText) : null; } catch (_) { /* non-JSON response */ }
   if (!res.ok) {
     let msg = res.status === 404
-      ? "API endpoint not found. Start the FastAPI backend and open the app from its address."
+      ? (API_BASE
+        ? `The configured backend (${API_BASE}) does not have this Desk Duel API route.`
+        : "This site serves the Desk Duel frontend, but no API backend is configured. Set the backend URL in frontend/js/api-config.js.")
       : `Server request failed (${res.status}). Check the backend logs.`;
     if (data && typeof data.detail === "string") msg = data.detail;
     else if (data && Array.isArray(data.detail)) msg = data.detail.map(d => d.msg).join(", ");

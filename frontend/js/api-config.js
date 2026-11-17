@@ -1,3 +1,4 @@
-// Set this to the deployed backend's origin for a separately hosted frontend.
-// Leave empty for local/same-origin deployment.
-window.DESK_DUEL_API_BASE = window.DESK_DUEL_API_BASE || "";
+// For the Render frontend, set this to the public origin of the Desk Duel API
+// (for example, "https://your-desk-duel-api.vercel.app").
+// Leave empty only when the frontend and API are served from the same origin.
+window.DESK_DUEL_API_BASE = window.DESK_DUEL_API_BASE || "https://desk-duel-gamma.vercel.app";

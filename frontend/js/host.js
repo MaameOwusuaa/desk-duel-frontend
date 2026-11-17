@@ -24,7 +24,7 @@ async function loadCategories() {
     });
     sel.options[0].textContent = `All categories (${data.total})`;
   } catch (e) {
-    showSetupError("Could not reach the database: " + e.message);
+    showSetupError("Could not load question categories: " + e.message);
   }
 }
 
