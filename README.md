@@ -55,7 +55,7 @@ DB_PASSWORD=your_mysql_password
 DB_NAME=desk_duel
 ```
 
-For online hosting, you can provide the provider's MySQL connection URL as `DATABASE_URL` instead of the individual `DB_*` settings. Use the `mysql://username:password@host:3306/database_name` format and URL-encode special characters in the username or password. Connector/Python uses these parsed values to create its MySQL connection pool.
+For online hosting, you can provide the provider's MySQL connection URL as `DATABASE_URL` instead of the individual `DB_*` settings. Use the `mysql://username:password@host:3306/database_name` format and URL-encode special characters in the username or password. Connector/Python uses these parsed values to create its MySQL connection pool. If your provider requires certificate verification, add its `ssl_mode=VERIFY_IDENTITY` and `ssl_ca=...` query parameters. The CA file path must exist in the deployed backend; the backend maps `VERIFY_IDENTITY` to Connector/Python's certificate and hostname verification settings.
 
 ## 4. Run it
 
