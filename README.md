@@ -117,7 +117,7 @@ Hosting a game requires the host PIN `2002` by default. You can change it by set
 
 The frontend and backend are separate Git repositories and deploy as separate services. The current frontend is hosted at `https://desk-duel-frontend.onrender.com`; it serves the static pages only. The API must be deployed separately and configured in the frontend:
 
-1. Deploy the backend repository as a Python service. Vercel supports FastAPI apps; the backend can also run as a Render web service with `uvicorn main:app --host 0.0.0.0 --port $PORT`.
+1. Deploy the backend repository as a Python service. Its `vercel.json` places the function in Frankfurt (`fra1`), near the TiDB cluster in `eu-central-1`, to reduce database round-trip time. Vercel supports FastAPI apps; the backend can also run as a Render web service with `uvicorn main:app --host 0.0.0.0 --port $PORT`.
 2. In the backend service's environment settings, add `DATABASE_URL` from your hosted MySQL provider. It must select the `desk_duel` database (the URL path should end in `/desk_duel`). Also set `HOST_PIN=2002`, `PUBLIC_URL=https://desk-duel-frontend.onrender.com`, and `FRONTEND_ORIGINS=https://desk-duel-frontend.onrender.com`. Set `DB_POOL_SIZE=2` to keep connection use modest across serverless instances.
 3. If the database already has the old schema, run `backend/database/migrate_serverless_runtime.sql` once against it. For a new database, run `backend/database/schema.sql` and `backend/database/seed_questions.sql` instead.
 4. `frontend/js/api-config.js` is configured for `https://desk-duel-gamma.vercel.app`. Redeploy the frontend after pushing the change. The value must be the Desk Duel API URL, not another application's backend URL.
